@@ -33,8 +33,9 @@ app.get('/youtube/download', async (req, res) => {
     }
   } catch (error) {
     console.error('Error downloading video:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Internal Server Error', message: error.message });
   }
+  
 });
 
 app.get('/youtube/thumbnail', async (req, res) => {
