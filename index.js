@@ -8,7 +8,25 @@ const port = process.env.PORT | 3001;
 app.use(express.json());
 app.use(cors());
 
+app.get('/youtube/video-formats', async (req, res) => {
+  const { videoId } = req.query;
 
+  try {
+    const info = await ytdl.getInfo(videoId);
+    const formats = info.formats.map((format) => ({
+      itag: format.itag,
+      quality: format.qualityLabel,
+      container: format.container,
+      type: format.mimeType,
+      sizeInBytes: format.contentLength || null
+    }));
+    
+    res.json(formats);
+  } catch (error) {
+    console.error('Error fetching video formats:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 app.get('/youtube/download', async (req, res) => {
   const { videoId, quality } = req.query;
@@ -25,7 +43,10 @@ app.get('/youtube/download', async (req, res) => {
 
     if (selectedFormat) {
       const videoStream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, { format: selectedFormat });
-      res.setHeader('Content-Disposition', `attachment; filename="${videoInfo.videoDetails.title}.mp4"`);
+
+      const sanitizedTitle = videoInfo.videoDetails.title.replace(/[^a-z0-9]/gi, '_');
+      res.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.mp4"`);
+
       videoStream.pipe(res);
     } else {
       console.error('Requested video quality not found');
@@ -35,8 +56,8 @@ app.get('/youtube/download', async (req, res) => {
     console.error('Error downloading video:', error);
     res.status(500).json({ error: 'Internal Server Error', message: error.message });
   }
-  
 });
+
 
 app.get('/youtube/thumbnail', async (req, res) => {
     const { videoId, quality } = req.query;
