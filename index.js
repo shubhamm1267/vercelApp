@@ -3,10 +3,12 @@ const ytdl = require('ytdl-core');
 const fetch = import('node-fetch');
 const app = express();
 const cors = require('cors');
-const port = process.env.PORT || 3001;
+const port = process.env.PORT | 3001;
 
 app.use(express.json());
 app.use(cors());
+
+
 
 app.get('/youtube/download', async (req, res) => {
   const { videoId, quality } = req.query;
@@ -23,11 +25,7 @@ app.get('/youtube/download', async (req, res) => {
 
     if (selectedFormat) {
       const videoStream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, { format: selectedFormat });
-
-      const sanitizedFilename = videoInfo.videoDetails.title.replace(/[^\w\s]/gi, '');
-      const encodedFilename = encodeURIComponent(`${sanitizedFilename}.mp4`);
-
-      res.setHeader('Content-Disposition', `attachment; filename="${encodedFilename}"`);
+      res.setHeader('Content-Disposition', `attachment; filename="${videoInfo.videoDetails.title}.mp4"`);
       videoStream.pipe(res);
     } else {
       console.error('Requested video quality not found');
@@ -37,26 +35,31 @@ app.get('/youtube/download', async (req, res) => {
     console.error('Error downloading video:', error);
     res.status(500).json({ error: 'Internal Server Error', message: error.message });
   }
+  
 });
 
 app.get('/youtube/thumbnail', async (req, res) => {
-  const { videoId, quality } = req.query;
+    const { videoId, quality } = req.query;
+  
+    try {
+      const fetchModule = await fetch;
+      const response = await fetchModule.default(`https://i3.ytimg.com/vi/${videoId}/${quality}.jpg`);
+      const arrayBuffer = await response.arrayBuffer();
+  
+      const buffer = Buffer.from(arrayBuffer);
+  
+      res.writeHead(200, {
+        'Content-Type': 'image/jpeg',
+        'Content-Length': buffer.length,
+      });
+      res.end(buffer);
+    } catch (error) {
+      console.error('Error fetching thumbnail:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 
-  try {
-    const response = await fetch(`https://i3.ytimg.com/vi/${videoId}/${quality}.jpg`);
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
 
-    res.writeHead(200, {
-      'Content-Type': 'image/jpeg',
-      'Content-Length': buffer.length,
-    });
-    res.end(buffer);
-  } catch (error) {
-    console.error('Error fetching thumbnail:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
