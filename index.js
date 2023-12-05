@@ -15,7 +15,11 @@ app.get('/youtube/video-formats', async (req, res) => {
 
   try {
     const info = await ytdl.getInfo(videoId);
-    const formats = info.formats.map((format) => ({
+    
+    // Filter formats that have both video and audio
+    const videoAudioFormats = info.formats.filter(format => format.hasVideo && format.hasAudio);
+
+    const formats = videoAudioFormats.map((format) => ({
       itag: format.itag,
       quality: format.qualityLabel,
       container: format.container,
@@ -29,6 +33,7 @@ app.get('/youtube/video-formats', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 app.get('/youtube/download', async (req, res) => {
   const { videoId, quality } = req.query;
