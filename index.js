@@ -7,7 +7,7 @@ const port = process.env.PORT | 3001;
 const { URL } = require('url');
 app.use(express.json());
 app.use(cors());
-
+process.env.YTDL_NO_UPDATE = 'true';
 app.get('/youtube/video-formats', async (req, res) => {
     let { videoId } = req.query;
   
@@ -40,7 +40,7 @@ app.get('/youtube/video-formats', async (req, res) => {
       console.error('Error fetching video formats:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+  });   
 
 
 app.get('/youtube/download', async (req, res) => {
