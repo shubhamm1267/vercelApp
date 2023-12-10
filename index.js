@@ -3,7 +3,7 @@ const ytdl = require('ytdl-core');
 const fetch = import('node-fetch');
 const app = express();
 const cors = require('cors');
-const port = process.env.PORT | 3001;
+const port = process.env.PORT || 3001;
 const { URL } = require('url');
 app.use(express.json());
 app.use(cors());
