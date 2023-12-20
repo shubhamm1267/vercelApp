@@ -6,7 +6,6 @@ const cors = require('cors');
 const port = process.env.PORT | 3001;
 const { URL } = require('url');
 app.use(express.urlencoded({ extended: true }));
-process.env.YTDL_NO_UPDATE = 'true';
 app.use(express.json());
 app.use(cors());
 
