@@ -7,7 +7,9 @@ const port = process.env.PORT || 3001;
 const { URL } = require('url');
 app.use(express.json());
 app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 process.env.YTDL_NO_UPDATE = 'true';
+
 app.get('/youtube/video-formats', async (req, res) => {
     let { videoId } = req.query;
   
